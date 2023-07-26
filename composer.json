@@ -1,0 +1,10 @@
+{
+    "name": "iseeyoucopy/php-mvc-core",
+    "authors": [
+        {
+            "name": "iseeyoucopy",
+            "email": "2729972+iseeyoucopy@users.noreply.github.com"
+        }
+    ],
+    "require": {}
+}
