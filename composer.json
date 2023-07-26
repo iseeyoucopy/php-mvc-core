@@ -6,5 +6,10 @@
             "email": "iseeyoucopy@yahoo.com"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "iseeyoucopy\\phpmvc": "."
+        }
+    },
     "require": {}
 }
