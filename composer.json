@@ -6,6 +6,7 @@
             "email": "iseeyoucopy@yahoo.com"
         }
     ],
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "iseeyoucopy\\phpmvc\\": "."
