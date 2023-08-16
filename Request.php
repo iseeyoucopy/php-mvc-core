@@ -64,7 +64,7 @@ class Request
         return $this;
     }
 
-    public function getRouteParams()
+    public function getRouteParams(string $string)
     {
         return $this->routeParams;
     }
@@ -72,5 +72,17 @@ class Request
     public function getRouteParam($param, $default = null)
     {
         return $this->routeParams[$param] ?? $default;
+    }
+
+    /**
+     * Get the guest identifier based on IP address and user agent.
+     *
+     * @return string The guest identifier.
+     */
+    public function getVisitorId(): string
+    {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
+        return md5($ip . $userAgent);
     }
 }

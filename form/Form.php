@@ -3,12 +3,14 @@
 namespace iseeyoucopy\phpmvc\form;
 
 use iseeyoucopy\phpmvc\Model;
+use iseeyoucopy\phpmvc\Application;
+use iseeyoucopy\phpmvc\middlewares\TokenMiddleware;
 
 /**
  * Class Form
  *
  * @author  iseeyoucopy <iseeyoucopy@yahoo.com>
- * @package core\form
+ * @package php-mvc-core\form
  */
 class Form
 {
@@ -16,9 +18,17 @@ class Form
     {
         $attributes = [];
         foreach ($options as $key => $value) {
-            $attributes[] = "$key=\"$value\"";
+            $attributes[] = htmlspecialchars($key) . "=\"" . htmlspecialchars($value) . "\"";
         }
-        echo sprintf('<form action="%s" method="%s" %s>', $action, $method, implode(" ", $attributes));
+
+        // Generate CSRF token
+        $csrfToken = TokenMiddleware::generateCsrfToken();
+        $tokenName = Application::$app->config['csrfTokenName'] ?? '_csrf_token';
+
+        // Begin the form with hidden input for CSRF token
+        echo sprintf('<form action="%s" method="%s" %s>', htmlspecialchars($action), htmlspecialchars($method), implode(" ", $attributes));
+        echo sprintf('<input type="hidden" name="%s" value="%s">', htmlspecialchars($tokenName), htmlspecialchars($csrfToken));  // Add hidden input for CSRF token
+
         return new Form();
     }
 

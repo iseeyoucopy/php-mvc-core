@@ -127,4 +127,9 @@ class Router
     {
         return Application::$app->view->renderViewOnly($view, $params);
     }
+
+    public function renderAdminView($view, $params = [])
+    {
+        return Application::$app->view->renderAdminView($view, $params);
+    }
 }

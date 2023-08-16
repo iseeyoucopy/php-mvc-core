@@ -2,27 +2,15 @@
 
 namespace iseeyoucopy\phpmvc\form;
 
-
 use iseeyoucopy\phpmvc\Model;
 
-/**
- * Class Field
- *
- * @author  iseeyoucopy <iseeyoucopy@yahoo.com>
- * @package core\form
- */
 class Field extends BaseField
 {
     const TYPE_TEXT = 'text';
     const TYPE_PASSWORD = 'password';
     const TYPE_FILE = 'file';
+    const TYPE_TEXTAREA = 'textarea';
 
-    /**
-     * Field constructor.
-     *
-     * @param \iseeyoucopy\phpmvc\Model $model
-     * @param string          $attribute
-     */
     public function __construct(Model $model, string $attribute)
     {
         $this->type = self::TYPE_TEXT;
@@ -31,12 +19,20 @@ class Field extends BaseField
 
     public function renderInput()
     {
-        return sprintf('<input type="%s" class="form-control%s" name="%s" value="%s">',
-            $this->type,
-            $this->model->hasError($this->attribute) ? ' is-invalid' : '',
-            $this->attribute,
-            $this->model->{$this->attribute},
-        );
+        if ($this->type === self::TYPE_TEXTAREA) {
+            return sprintf('<textarea class="form-control%s" name="%s">%s</textarea>',
+                $this->model->hasError($this->attribute) ? ' is-invalid' : '',
+                htmlspecialchars($this->attribute),
+                htmlspecialchars($this->model->{$this->attribute}),
+            );
+        } else {
+            return sprintf('<input type="%s" class="form-control%s" name="%s" value="%s">',
+                $this->type,
+                $this->model->hasError($this->attribute) ? ' is-invalid' : '',
+                htmlspecialchars($this->attribute),
+                htmlspecialchars($this->model->{$this->attribute}),
+            );
+        }
     }
 
     public function passwordField()
@@ -48,6 +44,12 @@ class Field extends BaseField
     public function fileField()
     {
         $this->type = self::TYPE_FILE;
+        return $this;
+    }
+
+    public function textareaField()
+    {
+        $this->type = self::TYPE_TEXTAREA;
         return $this;
     }
 }

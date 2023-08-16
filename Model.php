@@ -133,4 +133,39 @@ class Model
         $errors = $this->errors[$attribute] ?? [];
         return $errors[0] ?? '';
     }
+    /**
+     * Get the user's IP address.
+     *
+     * @return string|null The user's IP address or null if not found.
+     */
+    public static function getUserIP()
+    {
+        // Check if the IP address is from a shared internet connection.
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        }
+
+        // Check if the IP address is from a proxy.
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            return $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+
+        // Check if the IP address is from the remote address.
+        if (!empty($_SERVER['REMOTE_ADDR'])) {
+            return $_SERVER['REMOTE_ADDR'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the user's user agent string.
+     *
+     * @return string|null The user's user agent string or null if not found.
+     */
+    public static function getUserAgent()
+    {
+        return $_SERVER['HTTP_USER_AGENT'] ?? null;
+    }
+
 }

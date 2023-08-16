@@ -16,6 +16,15 @@ class Session
     public function __construct()
     {
         session_start();
+
+        // Check if session is expired
+        if ($this->isSessionExpired()) {
+            $this->destroy();
+        } else {
+            // Renew session time
+            $_SESSION['last_activity'] = time();
+        }
+
         $flashMessages = $_SESSION[self::FLASH_KEY] ?? [];
         foreach ($flashMessages as $key => &$flashMessage) {
             $flashMessage['remove'] = true;
@@ -65,5 +74,31 @@ class Session
             }
         }
         $_SESSION[self::FLASH_KEY] = $flashMessages;
+    }
+    public function secureSession()
+    {
+        if (!isset($_SESSION['user_ip']) && !isset($_SESSION['user_agent'])) {
+            $_SESSION['user_ip'] = $_SERVER['REMOTE_ADDR'];
+            $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+        } else {
+            if ($_SESSION['user_ip'] !== $_SERVER['REMOTE_ADDR'] ||
+                $_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']) {
+                $this->destroy();
+            }
+        }
+    }
+    private function isSessionExpired()
+    {
+        $timeout_duration = 1800;  // 30 minutes
+        if (isset($_SESSION['last_activity']) &&
+            (time() - $_SESSION['last_activity']) > $timeout_duration) {
+            return true;
+        }
+        return false;
+    }
+
+    public function destroy()
+    {
+        session_destroy();
     }
 }

@@ -43,7 +43,7 @@ abstract class DbModel extends Model
     {
         $tableName = static::tableName();
         $attributes = array_keys($where);
-        $sql = implode("AND", array_map(fn($attr) => "$attr = :$attr", $attributes));
+        $sql = implode(" AND ", array_map(fn($attr) => "$attr = :$attr", $attributes));
         $statement = self::prepare("SELECT * FROM $tableName WHERE $sql");
         foreach ($where as $key => $item) {
             $statement->bindValue(":$key", $item);
@@ -74,6 +74,39 @@ abstract class DbModel extends Model
         return $stmt->fetchAll();
     }
 
+    public function getLatestProducts($limit = 3)
+    {
+        $tableName = $this->tableName();
+        $query = "SELECT * FROM $tableName ORDER BY created_at DESC LIMIT :limit";
+        $statement = self::prepare($query);
+        $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+    public static function findOneWithRoles($where)
+    {
+        $tableName = static::tableName();
+        $attributes = array_keys($where);
+        $sql = implode(" AND ", array_map(fn($attr) => "$attr = :$attr", $attributes));
+        $statement = self::prepare("SELECT * FROM $tableName WHERE $sql");
+        foreach ($where as $key => $item) {
+            $statement->bindValue(":$key", $item);
+        }
+        $statement->execute();
+
+        $user = $statement->fetchObject(static::class);
+
+        if ($user) {
+            // Fetch user roles using the fetchUserRolesFromDatabase method
+            $userRoles = self::fetchUserRolesFromDatabase($user->id);
+
+            // Set the roles to the user instance
+            $user->roles = $userRoles;
+        }
+
+        return $user;
+    }
     public function delete($id)
     {
         $tableName = static::tableName();
@@ -102,5 +135,22 @@ abstract class DbModel extends Model
         $statement->execute();
 
         return true;
+    }
+
+    public static function findLatest($limit = 3)
+    {
+        $tableName = static::tableName();
+        $statement = self::prepare("SELECT * FROM $tableName ORDER BY created_at DESC LIMIT :limit");
+        $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $statement->execute();
+        return $statement->fetchAll(\PDO::FETCH_CLASS, static::class);
+    }
+    public function getColumnValue($tableName, $columnName, $whereColumn, $whereValue): string {
+        $db = Application::$app->db;
+        $statement = $db->prepare("SELECT $columnName FROM $tableName WHERE $whereColumn = :value");
+        $statement->bindValue(':value', $whereValue);
+        $statement->execute();
+
+        return $statement->fetchColumn() ?: '';
     }
 }

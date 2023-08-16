@@ -3,12 +3,14 @@
 namespace iseeyoucopy\phpmvc;
 
 use iseeyoucopy\phpmvc\middlewares\BaseMiddleware;
+
 /**
  * Class Controller
  *
  * @author  iseeyoucopy <iseeyoucopy@yahoo.com>
  * @package iseeyoucopy\phpmvc
  */
+
 class Controller
 {
     public string $layout = 'main';
@@ -29,6 +31,11 @@ class Controller
         return Application::$app->router->renderView($view, $params);
     }
 
+    public function renderAdmin($view, $params = []): string
+    {
+        return Application::$app->router->renderAdminView($view, $params);
+    }
+
     public function registerMiddleware(BaseMiddleware $middleware)
     {
         $this->middlewares[] = $middleware;
@@ -37,6 +44,7 @@ class Controller
     /**
      * @return \iseeyoucopy\phpmvc\middlewares\BaseMiddleware[]
      */
+
     public function getMiddlewares(): array
     {
         return $this->middlewares;
