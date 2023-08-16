@@ -3,7 +3,11 @@
 namespace iseeyoucopy\phpmvc\form;
 
 use iseeyoucopy\phpmvc\Model;
-
+/**
+ * Class Field
+ * @author  iseeyoucopy <iseeyoucopy@yahoo.com>
+ * @package iseeyoucopy\phpmvc\form
+ */
 class Field extends BaseField
 {
     const TYPE_TEXT = 'text';

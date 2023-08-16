@@ -55,7 +55,7 @@ class Application
     {
         return !self::$app->user;
     }
-	
+
     public function login(UserModel $user)
     {
         $this->user = $user;
