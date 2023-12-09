@@ -167,5 +167,52 @@ class Model
     {
         return $_SERVER['HTTP_USER_AGENT'] ?? null;
     }
+    /**
+     * Upload a file and save it to a specified directory.
+     *
+     * @param string $attribute The name of the file input field.
+     * @param string $uploadDir The directory where the file will be saved.
+     * @param array $allowedExtensions An array of allowed file extensions (e.g., ['jpg', 'png']).
+     * @param int $maxFileSize The maximum file size allowed in bytes.
+     * @return string|bool The uploaded file's new name if successful, or false on failure.
+     */
+    public function uploadFile($attribute, $uploadDir, $allowedExtensions = [], $maxFileSize = 1048576)
+    {
+        if (!isset($_FILES[$attribute])) {
+            return false; // File input field not found.
+        }
 
+        $file = $_FILES[$attribute];
+        $fileName = $file['name'];
+        $fileSize = $file['size'];
+        $fileTmpName = $file['tmp_name'];
+        $fileError = $file['error'];
+
+        // Check for file upload errors.
+        if ($fileError !== UPLOAD_ERR_OK) {
+            return false; // Handle the error as needed.
+        }
+
+        // Check file extension.
+        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (!in_array($fileExtension, $allowedExtensions)) {
+            return false; // File extension not allowed.
+        }
+
+        // Check file size.
+        if ($fileSize > $maxFileSize) {
+            return false; // File size exceeds the allowed limit.
+        }
+
+        // Generate a unique file name.
+        $newFileName = uniqid() . '_' . $fileName;
+
+        // Move the uploaded file to the destination directory.
+        $destinationPath = $uploadDir . '/' . $newFileName;
+        if (move_uploaded_file($fileTmpName, $destinationPath)) {
+            return $newFileName; // File upload successful.
+        }
+
+        return false; // File upload failed.
+    }
 }

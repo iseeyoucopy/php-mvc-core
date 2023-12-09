@@ -20,36 +20,59 @@ class Database
         $username = $dbConfig['user'] ?? '';
         $password = $dbConfig['password'] ?? '';
 
-        $this->pdo = new \PDO($dbDsn, $username, $password);
-        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        //$this->log("Connecting to database...");
+
+        try {
+            $this->pdo = new \PDO($dbDsn, $username, $password);
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        } catch (\PDOException $e) {
+            $this->log("Failed to connect to database: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    private function log($message)
+    {
+        // Replace with your logging implementation
+        // For example, you can use a logging library like Monolog
+        echo "[" . date("Y-m-d H:i:s") . "] - " . $message ."<br>". PHP_EOL;
     }
 
     public function applyMigrations()
     {
-        $this->createMigrationsTable();
-        $appliedMigrations = $this->getAppliedMigrations();
+        try {
+            $this->createMigrationsTable();
+            $appliedMigrations = $this->getAppliedMigrations();
 
-        $newMigrations = [];
-        $files = scandir(Application::$ROOT_DIR . '/migrations');
-        $toApplyMigrations = array_diff($files, $appliedMigrations);
-        foreach ($toApplyMigrations as $migration) {
-            if ($migration === '.' || $migration === '..') {
-                continue;
+            $newMigrations = [];
+            $migrationsDir = Application::$ROOT_DIR . '/migrations';
+            $files = scandir($migrationsDir);
+            $toApplyMigrations = array_diff($files, $appliedMigrations);
+
+            foreach ($toApplyMigrations as $migration) {
+                if ($migration === '.' || $migration === '..') {
+                    continue;
+                }
+
+                require_once $migrationsDir . '/' . $migration;
+                $className = pathinfo($migration, PATHINFO_FILENAME);
+                $migrationInstance = new $className();
+
+                $this->log("Applying migration $migration");
+                $migrationInstance->up();
+                $this->log("Applied migration $migration");
+
+                $newMigrations[] = $migration;
             }
 
-            require_once Application::$ROOT_DIR . '/migrations/' . $migration;
-            $className = pathinfo($migration, PATHINFO_FILENAME);
-            $instance = new $className();
-            $this->log("Applying migration $migration");
-            $instance->up();
-            $this->log("Applied migration $migration");
-            $newMigrations[] = $migration;
-        }
-
-        if (!empty($newMigrations)) {
-            $this->saveMigrations($newMigrations);
-        } else {
-            $this->log("There are no migrations to apply");
+            if (!empty($newMigrations)) {
+                $this->saveMigrations($newMigrations);
+            } else {
+                $this->log("There are no migrations to apply");
+            }
+        } catch (\PDOException $e) {
+            $this->handleError($e->getMessage());
+            throw $e;
         }
     }
 
@@ -81,11 +104,18 @@ class Database
 
     public function prepare($sql): \PDOStatement
     {
-        return $this->pdo->prepare($sql);
+        try {
+            return $this->pdo->prepare($sql);
+        } catch (\PDOException $e) {
+            $this->handleError($e->getMessage());
+            throw $e; // re-throw the exception to propagate it
+        }
     }
-
-    private function log($message)
+    private function handleError($errorMessage)
     {
-        echo "[" . date("Y-m-d H:i:s") . "] - " . $message . PHP_EOL;
+        // Custom error handling logic
+        // This method could log the error, send alerts, or display a friendly message
+        echo "An error occurred: " . $errorMessage;
+        // You can customize this method to handle errors according to your application's needs
     }
 }

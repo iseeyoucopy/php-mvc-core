@@ -21,8 +21,15 @@ class Controller
      */
     protected array $middlewares = [];
 
+    /**
+     * Sets the layout for the object.
+     *
+     * @param mixed $layout The layout to set.
+     * @return void
+     */
     public function setLayout($layout): void
     {
+        // Assign the provided layout to the object's layout property.
         $this->layout = $layout;
     }
 

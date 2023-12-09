@@ -87,6 +87,7 @@ class Session
             }
         }
     }
+
     private function isSessionExpired()
     {
         $timeout_duration = 1800;  // 30 minutes
@@ -95,6 +96,15 @@ class Session
             return true;
         }
         return false;
+    }
+    public function getBasket()
+    {
+        return $_SESSION['basket'] ?? [];
+    }
+
+    public function setBasket($basket)
+    {
+        $_SESSION['basket'] = $basket;
     }
 
     public function destroy()

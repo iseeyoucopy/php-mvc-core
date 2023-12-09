@@ -14,19 +14,61 @@ use iseeyoucopy\phpmvc\Model;
 abstract class DbModel extends Model
 {
     abstract public static function tableName(): string;
-
+    /**
+     * Retrieves the primary key of the model.
+     *
+     * @return string The name of the primary key column.
+     */
     public static function primaryKey(): string
     {
         return 'id';
     }
 
+    public static function prepare($sql): \PDOStatement
+    {
+        try {
+            return Application::$app->db->prepare($sql);
+        } catch (\PDOException $e) {
+            self::handleError($e->getMessage());
+            throw $e;
+        }
+    }
+
+    /*
+    public static function prepare($sql): \PDOStatement
+    {
+        try {
+            return Application::$app->db->prepare($sql);
+        } catch (\PDOException $e) {
+            if ($e->getCode() === 'IMSSP' || $e->getCode() === 'IM001') {
+                // IMSSP: SQL Server "Invalid SQL statement"; IM001: Driver does not support this function
+                self::handleError("Row not found in the database");
+                throw new Exception("Row not found in the database", 404);
+            } else {
+                self::handleError($e->getMessage());
+                throw $e;
+            }
+        }
+    }
+*/
+    public static function handleError($errorMessage)
+    {
+        // Custom error handling logic for DbModel class
+        // This method could log the error, send alerts, or display a friendly message
+        echo "An error occurred in DbModel: " . $errorMessage;
+        // You can customize this method to handle errors according to your application's needs
+    }
     public function save()
     {
         $tableName = $this->tableName();
         $attributes = $this->attributes();
         $params = array_map(fn($attr) => ":$attr", $attributes);
-        $statement = self::prepare("INSERT INTO $tableName (" . implode(",", $attributes) . ") 
-                VALUES (" . implode(",", $params) . ")");
+        $sql = "INSERT INTO $tableName (" . implode(",", $attributes) . ") 
+            VALUES (" . implode(",", $params) . ")";
+        // Log the SQL query (for debugging)
+        error_log("SQL Query: $sql");
+
+        $statement = self::prepare($sql);
         foreach ($attributes as $attribute) {
             $statement->bindValue(":$attribute", $this->{$attribute});
         }
@@ -34,16 +76,14 @@ abstract class DbModel extends Model
         return true;
     }
 
-    public static function prepare($sql): \PDOStatement
-    {
-        return Application::$app->db->prepare($sql);
-    }
 
     public static function findOne($where)
     {
         $tableName = static::tableName();
         $attributes = array_keys($where);
         $sql = implode(" AND ", array_map(fn($attr) => "$attr = :$attr", $attributes));
+        // Log the SQL query (for debugging)
+        error_log("SQL Query: $sql");
         $statement = self::prepare("SELECT * FROM $tableName WHERE $sql");
         foreach ($where as $key => $item) {
             $statement->bindValue(":$key", $item);
@@ -59,9 +99,10 @@ abstract class DbModel extends Model
         $statement = self::prepare("SELECT * FROM $tableName WHERE $primaryKey = :$primaryKey");
         $statement->bindValue(":$primaryKey", $id);
         $statement->execute();
-        $product = $statement->fetchObject(static::class);
+        return $statement->fetchObject(static::class);
 
-        return $product ?: new static(); // Return an empty model if product is not found
+        //return $product ?: new static(); // Return an empty model if product is not found
+
     }
 
     public function findAll()

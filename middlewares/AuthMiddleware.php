@@ -2,7 +2,6 @@
 
 namespace iseeyoucopy\phpmvc\middlewares;
 
-
 use iseeyoucopy\phpmvc\Application;
 use iseeyoucopy\phpmvc\exception\ForbiddenException;
 
@@ -12,15 +11,14 @@ use iseeyoucopy\phpmvc\exception\ForbiddenException;
  * @author  iseeyoucopy <iseeyoucopy@yahoo.com>
  * @package iseeyoucopy\phpmvc
  */
+
 class AuthMiddleware extends BaseMiddleware
 {
     protected array $actions = [];
-    protected array $roles = [];  // <--- New roles property
 
-    public function __construct(array $actions = [], array $roles = [])  // <-- Updated constructor
+    public function __construct($actions = [])
     {
         $this->actions = $actions;
-        $this->roles = $roles;
     }
 
     public function execute()
@@ -29,11 +27,15 @@ class AuthMiddleware extends BaseMiddleware
             if (empty($this->actions) || in_array(Application::$app->controller->action, $this->actions)) {
                 throw new ForbiddenException();
             }
-        } else {
-            // If roles are defined, and the user doesn't have any of the roles, throw a forbidden exception.
-            if (!empty($this->roles) && !in_array(Application::$app->user->getRole(), $this->roles)) {
-                throw new ForbiddenException();
-            }
         }
+    }
+
+    public function handle($request, $next) {
+        // Check if user is logged in.
+        if(!isset($_SESSION['user_id'])) {
+            header('Location: /login');  // redirect to login page if not authenticated
+            exit();
+        }
+        return $next($request);
     }
 }

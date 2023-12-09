@@ -14,13 +14,21 @@ class Field extends BaseField
     const TYPE_PASSWORD = 'password';
     const TYPE_FILE = 'file';
     const TYPE_TEXTAREA = 'textarea';
+    const TYPE_INPUT = 'type';
+    const TYPE_INPUT_HIDDEN = 'hidden';
+    const TYPE_SELECT = 'select'; // Add a new field type for select
+    protected bool $readOnly = false;
 
     public function __construct(Model $model, string $attribute)
     {
         $this->type = self::TYPE_TEXT;
         parent::__construct($model, $attribute);
     }
-
+    public function setReadOnly(bool $readOnly = true): self
+    {
+        $this->readOnly = $readOnly;
+        return $this;
+    }
     public function renderInput()
     {
         if ($this->type === self::TYPE_TEXTAREA) {
@@ -30,11 +38,13 @@ class Field extends BaseField
                 htmlspecialchars($this->model->{$this->attribute}),
             );
         } else {
-            return sprintf('<input type="%s" class="form-control%s" name="%s" value="%s">',
+            $readOnlyAttribute = $this->readOnly ? ' readonly' : ''; // Check if field is read-only
+            return sprintf('<input type="%s" placeholder="%s" name="%s" value="%s" %s>', // Add readonly attribute
                 $this->type,
                 $this->model->hasError($this->attribute) ? ' is-invalid' : '',
                 htmlspecialchars($this->attribute),
                 htmlspecialchars($this->model->{$this->attribute}),
+                $readOnlyAttribute, // Include the readonly attribute in the input tag
             );
         }
     }
@@ -54,6 +64,40 @@ class Field extends BaseField
     public function textareaField()
     {
         $this->type = self::TYPE_TEXTAREA;
+        return $this;
+    }
+    public function inputField($options = [])
+    {
+        $this->type =  self::TYPE_INPUT;
+        $this->type = self::TYPE_INPUT;
+        error_log("Setting type to " . self::TYPE_INPUT);
+        return $this;
+    }
+    public function setHiddenInput($options = [])
+    {
+        $this->type = self::TYPE_INPUT_HIDDEN;
+        return $this;
+    }
+    public function selectField(array $options)
+    {
+        $this->type = self::TYPE_SELECT;
+        $selectOptions = '';
+
+        $selectedValue = (string) $this->model->{$this->attribute};
+
+        foreach ($options as $value => $label) {
+            $selected = $value === $selectedValue ? 'selected' : '';
+            $selectOptions .= sprintf('<option value="%s" %s>%s</option>', htmlspecialchars($value), $selected, htmlspecialchars($label));
+        }
+
+        $formControlClass = $this->model->hasError($this->attribute) ? ' is-invalid' : '';
+        $fieldName = htmlspecialchars($this->attribute);
+
+        return sprintf('<select class="form-control%s" name="%s">%s</select>', $formControlClass, $fieldName, $selectOptions);
+    }
+    public function fileInput()
+    {
+        $this->type = self::TYPE_FILE;
         return $this;
     }
 }

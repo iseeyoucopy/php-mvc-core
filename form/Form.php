@@ -26,7 +26,7 @@ class Form
         $tokenName = Application::$app->config['csrfTokenName'] ?? '_csrf_token';
 
         // Begin the form with hidden input for CSRF token
-        echo sprintf('<form action="%s" method="%s" %s>', htmlspecialchars($action), htmlspecialchars($method), implode(" ", $attributes));
+        echo sprintf('<form class="account-form contact-form" action="%s" method="%s" %s>', htmlspecialchars($action), htmlspecialchars($method), implode(" ", $attributes));
         echo sprintf('<input type="hidden" name="%s" value="%s">', htmlspecialchars($tokenName), htmlspecialchars($csrfToken));  // Add hidden input for CSRF token
 
         return new Form();
