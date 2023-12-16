@@ -15,8 +15,6 @@ class Session
 
     public function __construct()
     {
-        session_start();
-
         // Check if session is expired
         if ($this->isSessionExpired()) {
             $this->destroy();
@@ -107,7 +105,7 @@ class Session
         $_SESSION['basket'] = $basket;
     }
 
-    public function destroy()
+    public function destroy():bool
     {
         session_destroy();
     }
