@@ -83,6 +83,20 @@ class Application
      */
     public function login(UserModel $user)
     {
+        // Set a cookie after successful login
+        $cookieName = 'user_session';
+        $cookieValue = $user->id; // or any other unique identifier for the user
+        $expires = time() + 86400 * 30; // 30 days from now
+
+        setcookie($cookieName, $cookieValue, [
+            'expires' => $expires,
+            'path' => '/',
+            'domain' => '', // specify your domain if needed
+            'secure' => true, // set to true if using HTTPS
+            'httponly' => true, // a good idea to prevent JavaScript access
+            'samesite' => 'Lax' // or 'Strict' based on your requirements
+        ]);
+
         // Set the user property
         $this->user = $user;
 
