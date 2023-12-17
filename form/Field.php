@@ -39,13 +39,13 @@ class Field extends BaseField
             );
         } else {
             $readOnlyAttribute = $this->readOnly ? ' readonly' : ''; // Check if field is read-only
-            return sprintf('<input type="%s" class="form-control%s" placeholder="%s" name="%s" value="%s" %s>', // Add readonly attribute
+            return sprintf('<input type="%s" class="form-control%s" name="%s" value="%s" placeholder="%s" %s>',
                 $this->type,
                 $this->model->hasError($this->attribute) ? ' is-invalid' : '',
                 htmlspecialchars($this->attribute),
-                htmlspecialchars($this->attribute),
                 htmlspecialchars($this->model->{$this->attribute}),
-                $readOnlyAttribute, // Include the readonly attribute in the input tag
+                htmlspecialchars($this->attribute), // Repeated for placeholder
+                $readOnlyAttribute,
             );
         }
     }
